@@ -91,7 +91,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.opt`
@@ -191,6 +191,12 @@ vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right win
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
+-- Toggle Neo-tree on the left side
+vim.api.nvim_set_keymap('n', '<leader>tl', ':Neotree toggle left<CR>', { noremap = true, silent = true })
+
+-- Toggle Neo-tree on the right side
+vim.api.nvim_set_keymap('n', '<leader>tr', ':Neotree toggle right<CR>', { noremap = true, silent = true })
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -255,6 +261,137 @@ require('lazy').setup({
         changedelete = { text = '~' },
       },
     },
+  },
+
+  {
+    'rcarriga/nvim-dap-ui',
+    dependencies = { 'mfussenegger/nvim-dap' },
+    config = function()
+      local dap, dapui = require 'dap', require 'dapui'
+      dapui.setup {
+        -- Icons for the UI
+        icons = { expanded = '▾', collapsed = '▸' },
+        mappings = {
+          -- Use these to control the UI panels
+          expand = { '<CR>', '<2-LeftMouse>' },
+          open = 'o',
+          remove = 'd',
+          edit = 'e',
+          repl = 'r',
+          toggle = 't',
+        },
+        -- Layouts for the UI
+        layouts = {
+          {
+            elements = {
+              -- Elements to display in the UI
+              { id = 'scopes', size = 0.25 },
+              { id = 'breakpoints', size = 0.25 },
+              { id = 'stacks', size = 0.25 },
+              { id = 'watches', size = 0.25 },
+            },
+            size = 40, -- Width of the UI
+            position = 'left', -- Position of the UI
+          },
+          {
+            elements = {
+              'repl', -- The REPL for evaluating expressions
+              'console', -- The console output
+            },
+            size = 22, -- Height of the UI
+            position = 'bottom', -- Position of the UI
+          },
+        },
+        floating = {
+          max_height = 0.9, -- Floating window max height
+          max_width = 0.5, -- Floating window max width
+          border = 'single', -- Border style
+          mappings = {
+            close = { 'q', '<Esc>' },
+          },
+        },
+        windows = { indent = 1 },
+      }
+
+      -- Open the DAP UI automatically when debugging starts
+      dap.listeners.after.event_initialized['dapui_config'] = function()
+        dapui.open()
+      end
+
+      -- -- Close the DAP UI when debugging stops
+      -- dap.listeners.before.event_terminated['dapui_config'] = function()
+      --   dapui.close()
+      -- end
+      -- dap.listeners.before.event_exited['dapui_config'] = function()
+      --   dapui.close()
+      -- end
+      -- Start/Continue Debugging
+      --
+      vim.keymap.set('n', '<F5>', function()
+        require('dap').continue()
+      end, { desc = 'Start/Continue Debugging' })
+
+      -- Step Over
+      vim.keymap.set('n', '<F10>', function()
+        require('dap').step_over()
+      end, { desc = 'Step Over' })
+
+      -- Step Into
+      vim.keymap.set('n', '<F1>', function()
+        require('dap').step_into()
+      end, { desc = 'Step Into' })
+
+      -- Step Out
+      vim.keymap.set('n', '<F2>', function()
+        require('dap').step_out()
+      end, { desc = 'Step Out' })
+
+      -- Toggle Breakpoint
+      vim.keymap.set('n', '<leader>b', function()
+        require('dap').toggle_breakpoint()
+      end, { desc = 'Toggle Breakpoint' })
+
+      -- Set Conditional Breakpoint
+      vim.keymap.set('n', '<leader>B', function()
+        require('dap').set_breakpoint(vim.fn.input 'Breakpoint condition: ')
+      end, { desc = 'Set Conditional Breakpoint' })
+
+      -- Open REPL
+      vim.keymap.set('n', '<leader>rp', function()
+        require('dap').repl.open()
+      end, { desc = 'Open REPL' })
+
+      -- Toggle DAP UI
+      vim.keymap.set('n', '<leader>ui', function()
+        require('dapui').toggle()
+      end, { desc = 'Toggle DAP UI' })
+    end,
+  },
+
+  {
+    'hkupty/iron.nvim',
+    config = function()
+      require('iron.core').setup {
+        config = {
+          repl_definition = {
+            python = {
+              command = { 'ipython', '' },
+            },
+          },
+          repl_open_cmd = require('iron.view').split.horizontal.botright(15),
+        },
+        keymaps = {
+          send_motion = '<leader>cc',
+          interrupt = '<leader>cp>',
+          exit = '<leader>cq',
+          clear = '<leader>cl',
+        },
+        highlight = {
+          italic = true,
+        },
+        ignore_blank_lines = true,
+      }
+    end,
   },
 
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
