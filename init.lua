@@ -92,7 +92,12 @@ vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = true
+vim.g.iron = {
+  repl_open_cmd = 'rightbelow vertical split',
+}
 
+-- 设置快捷键为 <leader>r 来打开 iron 的 REPL 窗口
+vim.api.nvim_set_keymap('n', '<leader>rp', ':IronRepl<CR>', { noremap = true, silent = true })
 -- [[ Setting options ]]
 -- See `:help vim.opt`
 -- NOTE: You can change these options as you wish!
@@ -128,6 +133,12 @@ vim.opt.undofile = true
 -- Case-insensitive searching UNLESS \C or one or more capital letters in the search term
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
+
+-- 在下半部分打开终端
+vim.api.nvim_set_keymap('n', '<leader>tt', ':split | terminal<CR>', { noremap = true, silent = true })
+
+-- 在右侧打开终端
+vim.api.nvim_set_keymap('n', '<leader>tv', ':vsplit | terminal<CR>', { noremap = true, silent = true })
 
 -- Keep signcolumn on by default
 vim.opt.signcolumn = 'yes'
@@ -356,11 +367,6 @@ require('lazy').setup({
         require('dap').set_breakpoint(vim.fn.input 'Breakpoint condition: ')
       end, { desc = 'Set Conditional Breakpoint' })
 
-      -- Open REPL
-      vim.keymap.set('n', '<leader>rp', function()
-        require('dap').repl.open()
-      end, { desc = 'Open REPL' })
-
       -- Toggle DAP UI
       vim.keymap.set('n', '<leader>ui', function()
         require('dapui').toggle()
@@ -382,9 +388,12 @@ require('lazy').setup({
         },
         keymaps = {
           send_motion = '<leader>cc',
+          visual_send = '<leader>cc',
           interrupt = '<leader>cp>',
           exit = '<leader>cq',
           clear = '<leader>cl',
+          send_line = '<space>cd',
+          send_file = '<space>cf',
         },
         highlight = {
           italic = true,
@@ -408,7 +417,6 @@ require('lazy').setup({
   -- Then, because we use the `config` key, the configuration only runs
   -- after the plugin has been loaded:
   --  config = function() ... end
-
   { -- Useful plugin to show you pending keybinds.
     'folke/which-key.nvim',
     event = 'VimEnter', -- Sets the loading event to 'VimEnter'
@@ -935,8 +943,8 @@ require('lazy').setup({
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-day'
-      --
+      -- vim.cmd.colorscheme 'tokyonight-day'
+      vim.cmd.colorscheme 'darkblue'
       -- vim.cmd.colorscheme 'tokyonight-night'
       -- You can configure highlights by doing something like:
       vim.cmd.hi 'Comment gui=none'
