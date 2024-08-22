@@ -96,12 +96,33 @@ vim.g.iron = {
   repl_open_cmd = 'rightbelow vertical split',
 }
 
--- 设置快捷键为 <leader>r 来打开 iron 的 REPL 窗口
+-- LaTeX 相关配置
+vim.g.vimtex_view_method = 'zathura'
+vim.g.vimtex_compiler_method = 'latexmk'
+
+-- Markdown 预览配置
+vim.g.mkdp_auto_start = 1
+
 vim.api.nvim_set_keymap('n', '<leader>rp', ':IronRepl<CR>', { noremap = true, silent = true })
 -- [[ Setting options ]]
 -- See `:help vim.opt`
 -- NOTE: You can change these options as you wish!
 --  For more options, you can see `:help option-list`
+--
+--
+--
+--
+-- init.lua 配置
+vim.api.nvim_set_keymap('n', '<leader>wh', ':wincmd H<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>wl', ':wincmd L<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>wk', ':wincmd K<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>wj', ':wincmd J<CR>', { noremap = true, silent = true })
+
+vim.api.nvim_set_keymap('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', { noremap = true, silent = true })
+
+-- vim.lsp.handlers['textDocument/hover'] = vim.lsp.with(vim.lsp.handlers.hover, {
+--   border = 'rounded', -- 你可以选择不同的边框样式，例如 "single", "double", "shadow" 等
+-- })
 
 -- Make line numbers default
 vim.opt.number = true
@@ -249,6 +270,8 @@ require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
   'github/copilot.vim',
+  -- fugitive.vim: Git wrapper
+  'tpope/vim-fugitive',
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
   -- keys can be used to configure plugin behavior/loading/etc.
@@ -272,6 +295,53 @@ require('lazy').setup({
         changedelete = { text = '~' },
       },
     },
+  },
+  -- 添加 pydoc.vim 插件
+  -- {
+  --   'fs111/pydoc.vim',
+  --   ft = 'python', -- 仅在编辑 Python 文件时加载
+  --   config = function()
+  --     vim.api.nvim_set_keymap('n', '<leader>pd', ':Pydoc <C-r><C-w><CR>:wincmd J<CR>:wincmd L<CR>', { noremap = true, silent = true })
+  --   end,
+  -- },
+
+  -- vimtex is a comprehensive plugin for editing LaTeX files with Vim.
+  {
+    'lervag/vimtex',
+    ft = 'tex',
+    config = function()
+      vim.g.vimtex_view_method = 'zathura'
+      vim.g.vimtex_quickfix_mode = 0
+      vim.g.vimtex_compiler_method = 'latexmk'
+      vim.g.vimtex_compiler_progname = 'nvr'
+      vim.g.vimtex_compiler_latexmk = {
+        options = {
+          '-pdf',
+          '-file-line-error',
+          '-synctex=1',
+          '-interaction=nonstopmode',
+          '-shell-escape',
+        },
+      }
+    end,
+  },
+
+  -- markdown-preview.nvim is a plugin for previewing markdown files in a web browser.
+  {
+    'iamcco/markdown-preview.nvim',
+    build = 'cd app && npm install',
+    ft = 'markdown',
+    config = function()
+      vim.g.mkdp_auto_start = 1
+      vim.g.mkdp_auto_close = 1
+      vim.g.mkdp_refresh_slow = 0
+      vim.g.mkdp_command_for_global = 1
+      vim.g.mkdp_open_to_the_world = 1
+      vim.g.mkdp_open_ip = ''
+      vim.g.mkdp_port = '7777'
+      vim.g.mkdp_browser = ''
+      vim.g.mkdp_echo_preview_url = 1
+    end,
   },
 
   {
@@ -371,6 +441,10 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>ui', function()
         require('dapui').toggle()
       end, { desc = 'Toggle DAP UI' })
+      -- Terminate Debugging
+      vim.keymap.set('n', '<F4>', function()
+        require('dap').terminate()
+      end, { desc = 'Terminate Debugging' })
     end,
   },
 
