@@ -455,7 +455,8 @@ require('lazy').setup({
         config = {
           repl_definition = {
             python = {
-              command = { 'ipython', '' },
+              command = { 'ipython', '--no-autoindent' },
+              format = python_format,
             },
           },
           repl_open_cmd = require('iron.view').split.horizontal.botright(15),
