@@ -447,10 +447,10 @@ require('lazy').setup({
       end, { desc = 'Terminate Debugging' })
     end,
   },
-
   {
     'hkupty/iron.nvim',
     config = function()
+      local python_format = require('iron.fts.common').bracketed_paste_python
       require('iron.core').setup {
         config = {
           repl_definition = {
@@ -462,13 +462,13 @@ require('lazy').setup({
           repl_open_cmd = require('iron.view').split.horizontal.botright(15),
         },
         keymaps = {
-          -- send_motion = '<leader>cc',
-          visual_send = '<leader>cc',
-          interrupt = '<leader>cp>',
-          exit = '<leader>cq',
-          clear = '<leader>cl',
-          send_line = '<space>cc',
-          -- send_file = '<space>cf',
+          -- send_motion = 'cc',
+          visual_send = 'cc',
+          interrupt = 'cp>',
+          exit = 'cq',
+          clear = 'cl',
+          send_line = 'cc',
+          send_file = 'cf',
         },
         highlight = {
           italic = true,
@@ -477,6 +477,36 @@ require('lazy').setup({
       }
     end,
   },
+  --
+  -- {
+  --   'hkupty/iron.nvim',
+  --   config = function()
+  --     require('iron.core').setup {
+  --       config = {
+  --         repl_definition = {
+  --           python = {
+  --             command = { 'ipython', '--no-autoindent' },
+  --             format = python_format,
+  --           },
+  --         },
+  --         repl_open_cmd = require('iron.view').split.horizontal.botright(15),
+  --       },
+  --       keymaps = {
+  --         -- send_motion = '<leader>cc',
+  --         visual_send = '<leader>cc',
+  --         interrupt = '<leader>cp>',
+  --         exit = '<leader>cq',
+  --         clear = '<leader>cl',
+  --         send_line = '<space>cc',
+  --         send_file = '<space>cf',
+  --       },
+  --       highlight = {
+  --         italic = true,
+  --       },
+  --       ignore_blank_lines = true,
+  --     }
+  --   end,
+  -- },
 
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
   --
