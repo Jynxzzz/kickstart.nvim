@@ -92,9 +92,9 @@ vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = true
-vim.g.iron = {
-  repl_open_cmd = 'rightbelow vertical split',
-}
+-- vim.g.iron = {
+--   repl_open_cmd = 'rightbelow vertical split',
+-- }
 
 -- LaTeX 相关配置
 vim.g.vimtex_view_method = 'zathura'
@@ -112,6 +112,8 @@ vim.api.nvim_set_keymap('n', '<leader>rp', ':IronRepl<CR>', { noremap = true, si
 --
 --
 --
+vim.api.nvim_set_keymap('n', 'Y', ':OSCYank<CR>', { noremap = true, silent = true })
+
 -- init.lua 配置
 vim.api.nvim_set_keymap('n', '<leader>wh', ':wincmd H<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<leader>wl', ':wincmd L<CR>', { noremap = true, silent = true })
@@ -154,7 +156,7 @@ vim.opt.undofile = true
 -- Case-insensitive searching UNLESS \C or one or more capital letters in the search term
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
-
+vim.api.nvim_set_option('clipboard', 'unnamed')
 -- 在下半部分打开终端
 vim.api.nvim_set_keymap('n', '<leader>tt', ':split | terminal<CR>', { noremap = true, silent = true })
 
@@ -229,6 +231,29 @@ vim.api.nvim_set_keymap('n', '<leader>tl', ':Neotree toggle left<CR>', { noremap
 -- Toggle Neo-tree on the right side
 vim.api.nvim_set_keymap('n', '<leader>tr', ':Neotree toggle right<CR>', { noremap = true, silent = true })
 
+-- 在 init.lua 中添加以下行
+vim.api.nvim_exec(
+  [[
+    function! AppendEmptyLines()
+        let l:empty_lines = 10  " 你想要保留的空白行数
+        let l:current_lines = line('$')
+        if l:current_lines < l:empty_lines
+            execute l:empty_lines . 'G'
+        endif
+    endfunction
+
+    autocmd BufWritePre * silent! call AppendEmptyLines()
+]],
+  false
+)
+
+vim.cmd [[
+  augroup autosave
+    autocmd!
+    autocmd InsertLeave,TextChanged * silent! wall
+  augroup end
+]]
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -272,6 +297,9 @@ require('lazy').setup({
   'github/copilot.vim',
   -- fugitive.vim: Git wrapper
   'tpope/vim-fugitive',
+  --surround
+  'tpope/vim-surround',
+  --vim-previewer
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
   -- keys can be used to configure plugin behavior/loading/etc.
@@ -283,6 +311,34 @@ require('lazy').setup({
   -- options to `gitsigns.nvim`. This is equivalent to the following Lua:
   --    require('gitsigns').setup({ ... })
   --
+  -- 在 require('lazy').setup() 函数中添加以下内容
+  {
+    'ojroques/nvim-osc52',
+    config = function()
+      -- 这里可以进行插件的自定义配置
+      require('osc52').setup {
+        max_length = 0, -- 最大复制长度，0 表示不限制
+        silent = false, -- 复制时是否静默
+        trim = false, -- 是否去除多余的空白字符
+      }
+    end,
+  },
+
+  -- -- 在你的插件列表中添加 lsp_signature.nvim
+  -- require('lazy').setup {
+  {
+    'ray-x/lsp_signature.nvim',
+    config = function()
+      require('lsp_signature').setup {
+        bind = true, -- This is mandatory, otherwise border config won't get registered.
+        handler_opts = {
+          border = 'rounded', -- 显示圆角边框
+        },
+      }
+    end,
+  },
+  -- 你其他的插件配置
+  -- },
   -- See `:help gitsigns` to understand what the configuration keys do
   { -- Adds git related signs to the gutter, as well as utilities for managing changes
     'lewis6991/gitsigns.nvim',
@@ -396,6 +452,7 @@ require('lazy').setup({
 
       -- Open the DAP UI automatically when debugging starts
       dap.listeners.after.event_initialized['dapui_config'] = function()
+        vim.cmd 'silent! wall' -- Save files before starting debugger
         dapui.open()
       end
 
@@ -445,6 +502,12 @@ require('lazy').setup({
       vim.keymap.set('n', '<F4>', function()
         require('dap').terminate()
       end, { desc = 'Terminate Debugging' })
+      -- evaluate expression
+      vim.keymap.set('n', '<leader>wa', function()
+        require('dapui').eval()
+      end, { desc = 'Evaluate Expression' })
+      -- 可视模式下设置快捷键
+      vim.api.nvim_set_keymap('v', '<leader>wa', '<Cmd>lua require("dapui").eval()<CR>', { noremap = true, silent = true })
     end,
   },
   {
@@ -464,10 +527,11 @@ require('lazy').setup({
         keymaps = {
           -- send_motion = 'cc',
           visual_send = 'cc',
-          interrupt = 'cp>',
-          exit = 'cq',
-          clear = 'cl',
+          interrupt = 'cp',
+          -- exit = 'cq',
+          clear = '<leader>cl',
           send_line = 'cc',
+          exit = '<leader>cq',
           send_file = 'cf',
         },
         highlight = {
@@ -1171,6 +1235,13 @@ require('lazy').setup({
     },
   },
 })
-
+-- Neovim yank 支持 tmux 系统剪贴板
+vim.cmd [[
+  if exists('$TMUX')
+    let &t_ti.="\ePtmux;\e\e]50;CursorShape=0\x7"
+    let &t_te.="\ePtmux;\e\e]50;CursorShape=1\x7"
+    set clipboard+=unnamedplus
+  endif
+]]
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
